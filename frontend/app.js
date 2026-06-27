@@ -1,4 +1,5 @@
 const API = "http://127.0.0.1:8000";
+let editingId = null;
 
 async function loadRisks() {
     const status = document.getElementById("filter-status").value;
@@ -27,9 +28,50 @@ async function loadRisks() {
                 <td><span class="score ${scoreClass}">${r.risk_score}</span></td>
                 <td><span class="status-${r.status}">${r.status}</span></td>
                 <td>${date}</td>
-                <td><button class="btn-delete" onclick="deleteRisk(${r.id})">Delete</button></td>
+                <td>
+                    <button class="btn-edit" onclick="editRisk(${r.id}, '${r.title}', '${r.description}', ${r.likelihood}, ${r.impact}, '${r.owner}', '${r.status}', '${r.category}')">Edit</button>
+                    <button class="btn-delete" onclick="deleteRisk(${r.id})">Delete</button>
+                </td>
             </tr>`;
     });
+}
+
+function editRisk(id, title, description, likelihood, impact, owner, status, category) {
+    editingId = id;
+    document.getElementById("title").value       = title;
+    document.getElementById("description").value = description;
+    document.getElementById("likelihood").value  = likelihood;
+    document.getElementById("impact").value      = impact;
+    document.getElementById("owner").value       = owner;
+    document.getElementById("status").value      = status;
+    document.getElementById("category").value    = category;
+
+    document.getElementById("likelihood-val").textContent = likelihood;
+    document.getElementById("impact-val").textContent     = impact;
+
+    document.getElementById("form-title").textContent     = "Edit Risk";
+    document.getElementById("submit-btn").textContent     = "Update Risk";
+    document.getElementById("cancel-btn").style.display   = "inline-block";
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function cancelEdit() {
+    editingId = null;
+    document.getElementById("title").value       = "";
+    document.getElementById("description").value = "";
+    document.getElementById("likelihood").value  = 3;
+    document.getElementById("impact").value      = 3;
+    document.getElementById("owner").value       = "";
+    document.getElementById("status").value      = "open";
+    document.getElementById("category").value    = "";
+
+    document.getElementById("likelihood-val").textContent = 3;
+    document.getElementById("impact-val").textContent     = 3;
+
+    document.getElementById("form-title").textContent   = "Add Risk";
+    document.getElementById("submit-btn").textContent   = "Add Risk";
+    document.getElementById("cancel-btn").style.display = "none";
 }
 
 async function addRisk() {
@@ -43,11 +85,20 @@ async function addRisk() {
         category:    document.getElementById("category").value,
     };
 
-    await fetch(`${API}/risks`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(risk)
-    });
+    if (editingId) {
+        await fetch(`${API}/risks/${editingId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(risk)
+        });
+        cancelEdit();
+    } else {
+        await fetch(`${API}/risks`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(risk)
+        });
+    }
 
     loadRisks();
 }

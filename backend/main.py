@@ -40,3 +40,17 @@ def delete_risk(risk_id: int, session: Session = Depends(get_session)):
     session.delete(risk)
     session.commit()
     return {"ok": True}
+
+@app.patch("/risks/{risk_id}", response_model=RiskRead)
+def update_risk(risk_id: int, risk_data: RiskCreate, session: Session = Depends(get_session)):
+    risk = session.get(Risk, risk_id)
+    if not risk:
+        raise HTTPException(status_code=404, detail="Risk not found")
+    for key, value in risk_data.dict().items():
+        setattr(risk, key, value)
+    risk.risk_score = risk_data.likelihood * risk_data.impact
+    risk.updated_at = datetime.utcnow()
+    session.add(risk)
+    session.commit()
+    session.refresh(risk)
+    return risk

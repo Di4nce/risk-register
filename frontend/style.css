@@ -79,3 +79,17 @@ tr:hover { background: #f9f9f9; }
     font-size: 0.8rem;
 }
 .btn-delete:hover { background: #c0392b; }
+
+.btn-edit {
+    background: #f39c12;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.8rem;
+    margin-right: 0.3rem;
+}
+.btn-edit:hover { background: #d68910; }
+
+.btn-cancel {
+    background: #888;
+    grid-column: span 1;
+}
+.btn-cancel:hover { background: #666; }
