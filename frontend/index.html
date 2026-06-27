@@ -1,75 +1,208 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="no">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Risk Register</title>
+    <title>Risikoregister</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     <div class="container">
-        <h1>Risk Register</h1>
+        <h1>Risikoregister</h1>
 
-        <section class="form-section">
-            <h2 id="form-title">Add Risk</h2>
-            <div class="form-grid">
-                <input id="title" placeholder="Risk title" />
-                <input id="owner" placeholder="Owner" />
-                <input id="category" placeholder="Category (e.g. Access Control)" />
-                <textarea id="description" placeholder="Description"></textarea>
-                <div class="slider-group">
-                    <label>Likelihood: <span id="likelihood-val">3</span> — <span id="likelihood-text" class="criteria-text">Possible (has occurred in the sector)</span></label>
-                    <input type="range" id="likelihood" min="1" max="5" value="3"
-                        oninput="updateSlider('likelihood', this.value)">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('assets')">Informasjonsregister</button>
+            <button class="tab-btn" onclick="switchTab('risks')">Risikoregister</button>
+            <button class="tab-btn" onclick="switchTab('dashboard')">Dashboard</button>
+        </div>
+
+        <!-- RISIKOREGISTERFANE -->
+        <div id="tab-risks" style="display:none">
+            <section class="form-section">
+                <h2 id="form-title">Legg til risiko</h2>
+                <div class="form-grid">
+                    <input id="title" placeholder="Risikotittel" />
+                    <input id="owner" placeholder="Risikoeier" />
+                    <input id="category" placeholder="Kategori (f.eks. Tilgangskontroll)" />
+                    <select id="asset-link">
+                        <option value="">— Koble til informasjonsverdier (valgfritt) —</option>
+                    </select>
+                    <textarea id="description" placeholder="Beskrivelse"></textarea>
+                    <textarea id="treatment" placeholder="Behandlingsplan (tiltak, ansvarlig part)"></textarea>
+                    <div class="slider-group">
+                        <label>Sannsynlighet: <span id="likelihood-val">3</span> — <span id="likelihood-text" class="criteria-text">Mulig (har skjedd i sektoren)</span></label>
+                        <input type="range" id="likelihood" min="1" max="5" value="3"
+                            oninput="updateSlider('likelihood', this.value)">
+                    </div>
+                    <div class="slider-group">
+                        <label>Konsekvens: <span id="impact-val">3</span> — <span id="impact-text" class="criteria-text">Moderat (betydelig forstyrrelse, begrenset datatap)</span></label>
+                        <input type="range" id="impact" min="1" max="5" value="3"
+                            oninput="updateSlider('impact', this.value)">
+                    </div>
+                    <select id="status">
+                        <option value="open">Åpen</option>
+                        <option value="mitigated">Håndtert</option>
+                        <option value="accepted">Akseptert</option>
+                    </select>
+                    <div></div>
+                    <button id="submit-btn" onclick="addRisk()">Legg til risiko</button>
+                    <button id="cancel-btn" class="btn-cancel" onclick="cancelEdit()" style="display:none">Avbryt</button>
                 </div>
-                <div class="slider-group">
-                    <label>Impact: <span id="impact-val">3</span> — <span id="impact-text" class="criteria-text">Moderate (significant disruption, limited data loss)</span></label>
-                    <input type="range" id="impact" min="1" max="5" value="3"
-                        oninput="updateSlider('impact', this.value)">
+            </section>
+
+            <section class="filter-section">
+                <label>Filtrer etter status:
+                    <select id="filter-status" onchange="loadRisks()">
+                        <option value="">Alle</option>
+                        <option value="open">Åpen</option>
+                        <option value="mitigated">Håndtert</option>
+                        <option value="accepted">Akseptert</option>
+                    </select>
+                </label>
+                <a href="/risks/export/csv" download>
+                    <button class="btn-export">Eksporter til CSV</button>
+                </a>
+            </section>
+
+            <section class="table-section">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tittel</th>
+                            <th>Kategori</th>
+                            <th>Risikoeier</th>
+                            <th>Informasjonsverdi</th>
+                            <th>Sannsynlighet</th>
+                            <th>Konsekvens</th>
+                            <th>Risikoscore</th>
+                            <th>Status</th>
+                            <th>Behandlingsplan</th>
+                            <th>Opprettet</th>
+                            <th>Handling</th>
+                        </tr>
+                    </thead>
+                    <tbody id="risk-body"></tbody>
+                </table>
+            </section>
+        </div>
+
+        <!-- INFORMASJONSREGISTERFANE -->
+        <div id="tab-assets">
+            <section class="form-section">
+                <h2 id="asset-form-title">Legg til informasjonsverdi</h2>
+                <div class="form-grid">
+                    <input id="asset-name" placeholder="Navn på informasjonsverdi" />
+                    <input id="asset-owner" placeholder="Eier" />
+                    <select id="asset-category">
+                        <option value="data">Data</option>
+                        <option value="system">System</option>
+                        <option value="service">Tjeneste</option>
+                        <option value="physical">Fysisk</option>
+                        <option value="people">Personer</option>
+                    </select>
+                    <textarea id="asset-description" placeholder="Beskrivelse"></textarea>
+                    <div class="slider-group">
+                        <label>Konfidensialitet: <span id="confidentiality-val">3</span> — <span id="confidentiality-text" class="criteria-text">Moderat</span></label>
+                        <input type="range" id="confidentiality" min="1" max="5" value="3"
+                            oninput="updateAssetSlider('confidentiality', this.value)">
+                    </div>
+                    <div class="slider-group">
+                        <label>Integritet: <span id="integrity-val">3</span> — <span id="integrity-text" class="criteria-text">Moderat</span></label>
+                        <input type="range" id="integrity" min="1" max="5" value="3"
+                            oninput="updateAssetSlider('integrity', this.value)">
+                    </div>
+                    <div class="slider-group">
+                        <label>Tilgjengelighet: <span id="availability-val">3</span> — <span id="availability-text" class="criteria-text">Moderat</span></label>
+                        <input type="range" id="availability" min="1" max="5" value="3"
+                            oninput="updateAssetSlider('availability', this.value)">
+                    </div>
+                    <div></div>
+                    <button id="asset-submit-btn" onclick="addAsset()">Legg til informasjonsverdi</button>
+                    <button id="asset-cancel-btn" class="btn-cancel" onclick="cancelAssetEdit()" style="display:none">Avbryt</button>
                 </div>
-                <select id="status">
-                    <option value="open">Open</option>
-                    <option value="mitigated">Mitigated</option>
-                    <option value="accepted">Accepted</option>
-                </select>
-                <button id="submit-btn" onclick="addRisk()">Add Risk</button>
-                <button id="cancel-btn" class="btn-cancel" onclick="cancelEdit()" style="display:none">Cancel</button>
+            </section>
+
+            <section class="table-section">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Navn</th>
+                            <th>Kategori</th>
+                            <th>Eier</th>
+                            <th>K</th>
+                            <th>I</th>
+                            <th>T</th>
+                            <th>Verdi</th>
+                            <th>Opprettet</th>
+                            <th>Handling</th>
+                        </tr>
+                    </thead>
+                    <tbody id="asset-body"></tbody>
+                </table>
+            </section>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div id="tab-dashboard" style="display:none">
+
+            <div class="dashboard-grid">
+
+                <section class="form-section stat-box">
+                    <h2>Risikoer etter status</h2>
+                    <div class="stat-row">
+                        <div class="stat open">
+                            <span id="count-open">0</span>
+                            <label>Åpne</label>
+                        </div>
+                        <div class="stat mitigated">
+                            <span id="count-mitigated">0</span>
+                            <label>Håndtert</label>
+                        </div>
+                        <div class="stat accepted">
+                            <span id="count-accepted">0</span>
+                            <label>Akseptert</label>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="form-section stat-box">
+                    <h2>Informasjonsverdier etter kategori</h2>
+                    <div id="asset-category-stats"></div>
+                </section>
+
             </div>
-        </section>
 
-        <section class="filter-section">
-            <label>Filter by status:
-                <select id="filter-status" onchange="loadRisks()">
-                    <option value="">All</option>
-                    <option value="open">Open</option>
-                    <option value="mitigated">Mitigated</option>
-                    <option value="accepted">Accepted</option>
-                </select>
-            </label>
-            <a href="/risks/export/csv" download>
-                <button class="btn-export">Export to CSV</button>
-            </a>
-        </section>
+            <section class="form-section">
+                <h2>Risikomatrise</h2>
+                <div class="matrix-wrap">
+                    <div class="matrix-ylabel">Sannsynlighet →</div>
+                    <div class="matrix-container">
+                        <div class="matrix-grid" id="risk-matrix"></div>
+                        <div class="matrix-xlabel">Konsekvens →</div>
+                    </div>
+                </div>
+            </section>
 
-        <section class="table-section">
-            <table id="risk-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Title</th>
-                        <th>Category</th>
-                        <th>Owner</th>
-                        <th>Likelihood</th>
-                        <th>Impact</th>
-                        <th>Score</th>
-                        <th>Status</th>
-                        <th>Created</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="risk-body"></tbody>
-            </table>
-        </section>
+            <section class="form-section">
+                <h2>Topp 5 høyeste risikoer</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tittel</th>
+                            <th>Kategori</th>
+                            <th>Risikoeier</th>
+                            <th>Score</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="top-risks"></tbody>
+                </table>
+            </section>
+
+        </div>
+
     </div>
     <script src="/static/app.js"></script>
 </body>

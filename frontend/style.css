@@ -112,3 +112,133 @@ tr:hover { background: #f9f9f9; }
     align-items: center;
     gap: 1rem;
 }
+
+.tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.tab-btn {
+    background: #ccc;
+    color: #333;
+    padding: 0.6rem 1.5rem;
+    border: none;
+    border-radius: 5px 5px 0 0;
+    cursor: pointer;
+    font-size: 0.95rem;
+}
+
+.tab-btn.active {
+    background: #1a1a2e;
+    color: white;
+}
+
+.tab-btn:hover:not(.active) { background: #bbb; }
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-row {
+    display: flex;
+    gap: 1rem;
+    justify-content: space-around;
+    margin-top: 1rem;
+}
+
+.stat {
+    text-align: center;
+    padding: 1rem;
+    border-radius: 8px;
+    min-width: 80px;
+}
+
+.stat span {
+    display: block;
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: white;
+}
+
+.stat label {
+    font-size: 0.85rem;
+    color: white;
+    margin-top: 0.25rem;
+}
+
+.stat.open      { background: #e74c3c; }
+.stat.mitigated { background: #27ae60; }
+.stat.accepted  { background: #f39c12; }
+
+.cat-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.cat-label { min-width: 80px; font-size: 0.9rem; color: #555; }
+.cat-bar-wrap { flex: 1; background: #eee; border-radius: 4px; height: 18px; }
+.cat-bar { background: #4a90d9; height: 18px; border-radius: 4px; transition: width 0.3s; }
+.cat-count { font-weight: bold; min-width: 24px; text-align: right; }
+
+.matrix-wrap {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.matrix-ylabel {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-size: 0.85rem;
+    color: #555;
+    align-self: center;
+}
+
+.matrix-container { display: flex; flex-direction: column; }
+
+.matrix-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 60px);
+    grid-template-rows: repeat(5, 60px);
+    gap: 3px;
+}
+
+.matrix-cell {
+    border-radius: 4px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 2px;
+}
+
+.cell-low    { background: #a8e6a3; }
+.cell-medium { background: #ffe08a; }
+.cell-high   { background: #ffaaaa; }
+
+.matrix-dot {
+    background: #1a1a2e;
+    color: white;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+}
+
+.matrix-xlabel {
+    text-align: center;
+    font-size: 0.85rem;
+    color: #555;
+    margin-top: 0.4rem;
+}
