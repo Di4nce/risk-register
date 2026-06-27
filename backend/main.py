@@ -72,9 +72,9 @@ def export_csv(session: Session = Depends(get_session)):
     risks = session.exec(select(Risk)).all()
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(["ID", "Title", "Category", "Owner", "Description",
-                     "Likelihood", "Impact", "Risk Score", "Status",
-                     "Treatment", "Created", "Updated"])
+    writer.writerow(["ID", "Tittel", "Kategori", "Risikoeier", "Beskrivelse",
+                    "Sannsynlighet", "Konsekvens", "Risikoscore", "Status",
+                    "Behandlingsplan", "Opprettet", "Oppdatert"])
     for r in risks:
         writer.writerow([r.id, r.title, r.category, r.owner, r.description,
                          r.likelihood, r.impact, r.risk_score, r.status,
