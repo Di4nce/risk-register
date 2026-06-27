@@ -2,3 +2,4 @@ venv/
 __psycache__/
 *.db
 .env
+backend/risk_register.db
