@@ -20,7 +20,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from fastapi.responses import FileResponse
+import os
+
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
+
+@app.get("/static/app.js")
+def serve_js():
+    return FileResponse("frontend/app.js", media_type="application/javascript")
+
+@app.get("/static/style.css")
+def serve_css():
+    return FileResponse("frontend/style.css", media_type="text/css")
 
 @app.get("/")
 def serve_frontend():
