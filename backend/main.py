@@ -74,11 +74,11 @@ def export_csv(session: Session = Depends(get_session)):
     writer = csv.writer(output)
     writer.writerow(["ID", "Title", "Category", "Owner", "Description",
                      "Likelihood", "Impact", "Risk Score", "Status",
-                     "Created", "Updated"])
+                     "Treatment", "Created", "Updated"])
     for r in risks:
         writer.writerow([r.id, r.title, r.category, r.owner, r.description,
                          r.likelihood, r.impact, r.risk_score, r.status,
-                         r.created_at, r.updated_at])
+                        r.treatment, r.created_at, r.updated_at])
     output.seek(0)
     return StreamingResponse(
         iter([output.getvalue()]),

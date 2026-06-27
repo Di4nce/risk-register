@@ -11,6 +11,7 @@ class RiskBase(SQLModel):
     status: str = "open" # open / mitigated / accepted
     category: str = "general" # ISO domain later
     asset_id: Optional[int] = None # placeholder for asset register
+    treatment: Optional[str] = None # new
 
 class Risk(RiskBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
