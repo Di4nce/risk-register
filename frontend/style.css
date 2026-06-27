@@ -99,3 +99,16 @@ tr:hover { background: #f9f9f9; }
     color: #666;
     font-size: 0.85rem;
 }
+
+.btn-export {
+    background: #27ae60;
+    padding: 0.4rem 1rem;
+    font-size: 0.9rem;
+}
+.btn-export:hover { background: #1e8449; }
+
+.filter-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}

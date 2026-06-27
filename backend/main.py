@@ -1,3 +1,6 @@
+from fastapi.responses import StreamingResponse
+import csv
+import io
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pathlib import Path
@@ -63,3 +66,22 @@ def update_risk(risk_id: int, risk_data: RiskCreate, session: Session = Depends(
     session.commit()
     session.refresh(risk)
     return risk
+
+@app.get("/risks/export/csv")
+def export_csv(session: Session = Depends(get_session)):
+    risks = session.exec(select(Risk)).all()
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["ID", "Title", "Category", "Owner", "Description",
+                     "Likelihood", "Impact", "Risk Score", "Status",
+                     "Created", "Updated"])
+    for r in risks:
+        writer.writerow([r.id, r.title, r.category, r.owner, r.description,
+                         r.likelihood, r.impact, r.risk_score, r.status,
+                         r.created_at, r.updated_at])
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=risk_register.csv"}
+    )
