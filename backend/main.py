@@ -8,7 +8,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, select
 from datetime import datetime
-from .models import Risk, RiskCreate, RiskRead
+from .models import Risk, RiskCreate, RiskRead, Asset, AssetCreate, AssetRead
 from .database import create_db_and_tables, get_session
 
 app = FastAPI(title="Risk Register PoC")
@@ -85,3 +85,40 @@ def export_csv(session: Session = Depends(get_session)):
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=risk_register.csv"}
     )
+
+@app.get("/assets", response_model=list[AssetRead])
+def get_assets(session: Session = Depends(get_session)):
+    assets = session.exec(select(Asset)).all()
+    return assets
+
+@app.post("/assets", response_model=AssetRead)
+def create_asset(asset: AssetCreate, session: Session = Depends(get_session)):
+    db_asset = Asset.from_orm(asset)
+    db_asset.asset_value = round((asset.confidentiality + asset.integrity + asset.availability) / 3)
+    session.add(db_asset)
+    session.commit()
+    session.refresh(db_asset)
+    return db_asset
+
+@app.patch("/assets/{asset_id}", response_model=AssetRead)
+def update_asset(asset_id: int, asset_data: AssetCreate, session: Session = Depends(get_session)):
+    asset = session.get(Asset, asset_id)
+    if not asset:
+        raise HTTPException(status_code=404, detail="Asset not found")
+    for key, value in asset_data.dict().items():
+        setattr(asset, key, value)
+    asset.asset_value = round((asset_data.confidentiality + asset_data.integrity + asset_data.availability) / 3)
+    asset.updated_at = datetime.utcnow()
+    session.add(asset)
+    session.commit()
+    session.refresh(asset)
+    return asset
+
+@app.delete("/assets/{asset_id}")
+def delete_asset(asset_id: int, session: Session = Depends(get_session)):
+    asset = session.get(Asset, asset_id)
+    if not asset:
+        raise HTTPException(status_code=404, detail="Asset not found")
+    session.delete(asset)
+    session.commit()
+    return {"ok": True}

@@ -28,3 +28,26 @@ class RiskRead(RiskBase):
     created_at: datetime
     updated_at: datetime
 
+class AssetBase(SQLModel):
+    name: str
+    description: Optional[str] = None
+    category: str = "data"  # data / system / service / physical / people
+    owner: str
+    confidentiality: int = 3  # 1-5
+    integrity: int = 3        # 1-5
+    availability: int = 3     # 1-5
+
+class Asset(AssetBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    asset_value: int = 0
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class AssetCreate(AssetBase):
+    pass
+
+class AssetRead(AssetBase):
+    id: int
+    asset_value: int
+    created_at: datetime
+    updated_at: datetime
