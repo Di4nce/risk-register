@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risk Register</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Risk Register</h1>
+
+        <section class="form-section">
+            <h2>Add Risk</h2>
+            <div class="form-grid">
+                <input id="title" placeholder="Risk title" />
+                <input id="owner" placeholder="Owner" />
+                <input id="category" placeholder="Category (e.g. Access Control)" />
+                <textarea id="description" placeholder="Description"></textarea>
+                <div class="slider-group">
+                    <label>Likelihood: <span id="likelihood-val">3</span></label>
+                    <input type="range" id="likelihood" min="1" max="5" value="3"
+                        oninput="document.getElementById('likelihood-val').textContent=this.value">
+                </div>
+                <div class="slider-group">
+                    <label>Impact: <span id="impact-val">3</span></label>
+                    <input type="range" id="impact" min="1" max="5" value="3"
+                        oninput="document.getElementById('impact-val').textContent=this.value">
+                </div>
+                <select id="status">
+                    <option value="open">Open</option>
+                    <option value="mitigated">Mitigated</option>
+                    <option value="accepted">Accepted</option>
+                </select>
+                <button onclick="addRisk()">Add Risk</button>
+            </div>
+        </section>
+
+        <section class="filter-section">
+            <label>Filter by status:
+                <select id="filter-status" onchange="loadRisks()">
+                    <option value="">All</option>
+                    <option value="open">Open</option>
+                    <option value="mitigated">Mitigated</option>
+                    <option value="accepted">Accepted</option>
+                </select>
+            </label>
+        </section>
+
+        <section class="table-section">
+            <table id="risk-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Owner</th>
+                        <th>Likelihood</th>
+                        <th>Impact</th>
+                        <th>Score</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="risk-body"></tbody>
+            </table>
+        </section>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

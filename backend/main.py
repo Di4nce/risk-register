@@ -1,10 +1,18 @@
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, select
 from datetime import datetime
 from .models import Risk, RiskCreate, RiskRead
 from .database import create_db_and_tables, get_session
 
 app = FastAPI(title="Risk Register PoC")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.on_event("startup")
 def on_startup():

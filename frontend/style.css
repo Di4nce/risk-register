@@ -1,0 +1,81 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: system-ui, sans-serif;
+    background: #f4f6f8;
+    color: #1a1a2e;
+    padding: 2rem;
+}
+
+.container { max-width: 1100px; margin: 0 auto; }
+
+h1 {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    color: #1a1a2e;
+    border-bottom: 3px solid #4a90d9;
+    padding-bottom: 0.5rem;
+}
+
+h2 { font-size: 1.1rem; margin-bottom: 1rem; color: #444; }
+
+.form-section, .filter-section, .table-section {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+.form-grid textarea { grid-column: span 2; height: 70px; resize: vertical; }
+.form-grid button  { grid-column: span 2; }
+
+input, textarea, select {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 0.95rem;
+}
+
+button {
+    padding: 0.6rem 1.2rem;
+    background: #4a90d9;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.95rem;
+}
+
+button:hover { background: #357abd; }
+
+.slider-group { display: flex; flex-direction: column; gap: 0.25rem; }
+.slider-group label { font-size: 0.9rem; color: #555; }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+th { background: #1a1a2e; color: white; padding: 0.6rem 0.75rem; text-align: left; }
+td { padding: 0.6rem 0.75rem; border-bottom: 1px solid #eee; }
+tr:hover { background: #f9f9f9; }
+
+.score { font-weight: bold; padding: 0.2rem 0.5rem; border-radius: 4px; color: white; }
+.score-low    { background: #27ae60; }
+.score-medium { background: #f39c12; }
+.score-high   { background: #e74c3c; }
+
+.status-open      { color: #e74c3c; font-weight: bold; }
+.status-mitigated { color: #27ae60; font-weight: bold; }
+.status-accepted  { color: #f39c12; font-weight: bold; }
+
+.btn-delete {
+    background: #e74c3c;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.8rem;
+}
+.btn-delete:hover { background: #c0392b; }
