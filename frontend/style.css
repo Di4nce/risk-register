@@ -93,3 +93,9 @@ tr:hover { background: #f9f9f9; }
     grid-column: span 1;
 }
 .btn-cancel:hover { background: #666; }
+
+.criteria-text {
+    font-style: italic;
+    color: #666;
+    font-size: 0.85rem;
+}

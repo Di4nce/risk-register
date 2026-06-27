@@ -1,6 +1,28 @@
 const API = "http://127.0.0.1:8000";
 let editingId = null;
 
+const LIKELIHOOD_LABELS = {
+    1: "Rare (unlikely in foreseeable future)",
+    2: "Unlikely (has occurred in the industry)",
+    3: "Possible (has occurred in the sector)",
+    4: "Likely (occurs several times a year)",
+    5: "Almost Certain (occurs regularly)"
+};
+
+const IMPACT_LABELS = {
+    1: "Negligible (minimal disruption, no data loss)",
+    2: "Minor (small disruption, easily recovered)",
+    3: "Moderate (significant disruption, limited data loss)",
+    4: "Major (serious disruption, reportable incident)",
+    5: "Critical (severe disruption, significant data breach)"
+};
+
+function updateSlider(type, value) {
+    const labels = type === "likelihood" ? LIKELIHOOD_LABELS : IMPACT_LABELS;
+    document.getElementById(`${type}-val`).textContent = value;
+    document.getElementById(`${type}-text`).textContent = labels[value];
+}
+
 async function loadRisks() {
     const status = document.getElementById("filter-status").value;
     const res = await fetch(`${API}/risks`);
@@ -46,8 +68,8 @@ function editRisk(id, title, description, likelihood, impact, owner, status, cat
     document.getElementById("status").value      = status;
     document.getElementById("category").value    = category;
 
-    document.getElementById("likelihood-val").textContent = likelihood;
-    document.getElementById("impact-val").textContent     = impact;
+    updateSlider("likelihood", likelihood);
+    updateSlider("impact", impact);
 
     document.getElementById("form-title").textContent     = "Edit Risk";
     document.getElementById("submit-btn").textContent     = "Update Risk";
@@ -66,8 +88,8 @@ function cancelEdit() {
     document.getElementById("status").value      = "open";
     document.getElementById("category").value    = "";
 
-    document.getElementById("likelihood-val").textContent = 3;
-    document.getElementById("impact-val").textContent     = 3;
+    updateSlider("likelihood", 3);
+    updateSlider("impact", 3);
 
     document.getElementById("form-title").textContent   = "Add Risk";
     document.getElementById("submit-btn").textContent   = "Add Risk";

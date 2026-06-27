@@ -18,14 +18,14 @@
                 <input id="category" placeholder="Category (e.g. Access Control)" />
                 <textarea id="description" placeholder="Description"></textarea>
                 <div class="slider-group">
-                    <label>Likelihood: <span id="likelihood-val">3</span></label>
+                    <label>Likelihood: <span id="likelihood-val">3</span> — <span id="likelihood-text" class="criteria-text">Possible (has occurred in the sector)</span></label>
                     <input type="range" id="likelihood" min="1" max="5" value="3"
-                        oninput="document.getElementById('likelihood-val').textContent=this.value">
+                        oninput="updateSlider('likelihood', this.value)">
                 </div>
                 <div class="slider-group">
-                    <label>Impact: <span id="impact-val">3</span></label>
+                    <label>Impact: <span id="impact-val">3</span> — <span id="impact-text" class="criteria-text">Moderate (significant disruption, limited data loss)</span></label>
                     <input type="range" id="impact" min="1" max="5" value="3"
-                        oninput="document.getElementById('impact-val').textContent=this.value">
+                        oninput="updateSlider('impact', this.value)">
                 </div>
                 <select id="status">
                     <option value="open">Open</option>
