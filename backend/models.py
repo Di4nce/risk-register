@@ -51,3 +51,29 @@ class AssetRead(AssetBase):
     asset_value: int
     created_at: datetime
     updated_at: datetime
+
+class RiskControlLink(SQLModel, table=True):
+    risk_id:    Optional[int] = Field(default=None, foreign_key="risk.id", primary_key=True)
+    control_id: Optional[int] = Field(default=None, foreign_key="control.id", primary_key=True)
+
+class ControlBase(SQLModel):
+    name:        str
+    description: Optional[str] = None
+    annex_ref:   str  # e.g. "5.1"
+    annex_name:  str  # e.g. "Retningslinjer for informasjonssikkerhet"
+    owner:       Optional[str] = None
+    status:      str = "planlagt"  # planlagt / implementert / testet / ikke aktuell
+
+class Control(ControlBase, table=True):
+    id:         Optional[int] = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class ControlCreate(ControlBase):
+    risk_ids: list[int] = []
+
+class ControlRead(ControlBase):
+    id:         int
+    created_at: datetime
+    updated_at: datetime
+    risk_ids:   list[int] = []

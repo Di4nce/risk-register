@@ -37,7 +37,7 @@ h2 { font-size: 1.1rem; margin-bottom: 1rem; color: #444; }
 .form-grid textarea { grid-column: span 2; height: 70px; resize: vertical; }
 .form-grid button  { grid-column: span 2; }
 
-input, textarea, select {
+input:not([type="checkbox"]):not([type="range"]), textarea, select {
     width: 100%;
     padding: 0.5rem 0.75rem;
     border: 1px solid #ddd;
@@ -242,4 +242,61 @@ tr:hover { background: #f9f9f9; }
     font-size: 0.85rem;
     color: #555;
     margin-top: 0.4rem;
+}
+
+.risk-link-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.risk-link-group > label {
+    font-size: 0.9rem;
+    color: #555;
+    font-weight: bold;
+}
+
+.checkbox-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 0.75rem;
+    background: #fafafa;
+}
+
+.checkbox-item {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    padding: 0.25rem 0 !important;
+    cursor: pointer !important;
+    width: 100% !important;
+}
+
+.risk-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+input[type="checkbox"] {
+    width: 16px !important;
+    height: 16px !important;
+    min-width: 16px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    flex-shrink: 0 !important;
+    align-self: center !important;
+}
+
+.status-na {
+    color: #888;
+    font-weight: bold;
 }

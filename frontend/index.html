@@ -13,6 +13,7 @@
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('assets')">Informasjonsregister</button>
             <button class="tab-btn" onclick="switchTab('risks')">Risikoregister</button>
+            <button class="tab-btn" onclick="switchTab('controls')">Kontrollbibliotek</button>
             <button class="tab-btn" onclick="switchTab('dashboard')">Dashboard</button>
         </div>
 
@@ -140,6 +141,53 @@
                         </tr>
                     </thead>
                     <tbody id="asset-body"></tbody>
+                </table>
+            </section>
+        </div>
+
+        <!-- KONTROLLBIBLIOTEK -->
+        <div id="tab-controls" style="display:none">
+            <section class="form-section">
+                <h2 id="control-form-title">Legg til kontroll</h2>
+                <div class="form-grid">
+                    <select id="control-annex" onchange="fillAnnexName()">
+                        <option value="">— Velg ISO 27001:2022 Annex A kontroll —</option>
+                    </select>
+                    <input id="control-annex-name" placeholder="Kontrollnavn (fylles automatisk)" />
+                    <input id="control-owner" placeholder="Ansvarlig" />
+                    <select id="control-status">
+                        <option value="planlagt">Planlagt</option>
+                        <option value="implementert">Implementert</option>
+                        <option value="testet">Testet</option>
+                        <option value="ikke aktuell">Ikke aktuell</option>
+                    </select>
+                    <textarea id="control-description" placeholder="Beskrivelse av hvordan kontrollen er implementert"></textarea>
+                </div>
+                <div class="risk-link-group">
+                    <label>Koble til risikoer:</label>
+                    <div id="control-risk-checkboxes" class="checkbox-list"></div>
+                </div>
+                <div class="form-grid" style="margin-top: 0.75rem">
+                    <button id="control-submit-btn" onclick="addControl()">Legg til kontroll</button>
+                    <button id="control-cancel-btn" class="btn-cancel" onclick="cancelControlEdit()" style="display:none">Avbryt</button>
+                </div>
+            </section>
+
+            <section class="table-section">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Annex A</th>
+                            <th>Kontrollnavn</th>
+                            <th>Ansvarlig</th>
+                            <th>Status</th>
+                            <th>Tilknyttede risikoer</th>
+                            <th>Opprettet</th>
+                            <th>Handling</th>
+                        </tr>
+                    </thead>
+                    <tbody id="control-body"></tbody>
                 </table>
             </section>
         </div>

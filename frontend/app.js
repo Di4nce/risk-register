@@ -40,16 +40,19 @@ function updateAssetSlider(type, value) {
 function switchTab(tab) {
     document.getElementById("tab-risks").style.display     = tab === "risks"     ? "block" : "none";
     document.getElementById("tab-assets").style.display    = tab === "assets"    ? "block" : "none";
+    document.getElementById("tab-controls").style.display  = tab === "controls"  ? "block" : "none";
     document.getElementById("tab-dashboard").style.display = tab === "dashboard" ? "block" : "none";
     document.querySelectorAll(".tab-btn").forEach((btn, i) => {
         btn.classList.toggle("active",
             (i === 0 && tab === "assets") ||
             (i === 1 && tab === "risks") ||
-            (i === 2 && tab === "dashboard")
+            (i === 2 && tab === "controls") ||
+            (i === 3 && tab === "dashboard")
         );
     });
     if (tab === "risks")     loadRisks();
     if (tab === "assets")    loadAssets();
+    if (tab === "controls")  loadControls();
     if (tab === "dashboard") loadDashboard();
 }
 
@@ -162,6 +165,168 @@ function cancelAssetEdit() {
 async function deleteAsset(id) {
     await fetch(`${API}/assets/${id}`, { method: "DELETE" });
     loadAssets();
+}
+
+// ── KONTROLLBIBLIOTEK ─────────────────────────────────────
+
+let annexAControls = [];
+let editingControlId = null;
+
+async function loadAnnexA() {
+    const res = await fetch(`${API}/annex-a`);
+    annexAControls = await res.json();
+    const select = document.getElementById("control-annex");
+    select.innerHTML = `<option value="">— Velg ISO 27001:2022 Annex A kontroll —</option>`;
+    let currentSection = "";
+    annexAControls.forEach(c => {
+        const section = c.ref.split(".")[0];
+        if (section !== currentSection) {
+            currentSection = section;
+            const sectionNames = {
+                "5": "5 — Organisatoriske kontroller",
+                "6": "6 — Personkontroller",
+                "7": "7 — Fysiske kontroller",
+                "8": "8 — Teknologiske kontroller"
+            };
+            select.innerHTML += `<optgroup label="${sectionNames[section] || section}">`;
+        }
+        select.innerHTML += `<option value="${c.ref}">${c.ref} — ${c.name}</option>`;
+    });
+}
+
+function fillAnnexName() {
+    const ref = document.getElementById("control-annex").value;
+    const match = annexAControls.find(c => c.ref === ref);
+    if (match) {
+        document.getElementById("control-annex-name").value = match.name;
+    }
+}
+
+async function loadControls() {
+    const [controlsRes, risksRes] = await Promise.all([
+        fetch(`${API}/controls`),
+        fetch(`${API}/risks`)
+    ]);
+    const controls = await controlsRes.json();
+    const risks    = await risksRes.json();
+    const riskMap  = Object.fromEntries(risks.map(r => [r.id, r.title]));
+
+    populateControlRiskCheckboxes(risks, []);
+
+    const body = document.getElementById("control-body");
+    body.innerHTML = "";
+    controls.forEach(c => {
+        const statusClass = {
+            "planlagt":     "status-open",
+            "implementert": "status-accepted",
+            "testet":       "status-mitigated",
+            "ikke aktuell": "status-na"
+        }[c.status] || "";
+
+        const linkedRisks = c.risk_ids.map(id => riskMap[id] || `ID ${id}`).join(", ") || "—";
+        const date = new Date(c.created_at).toLocaleDateString("no-NO");
+
+        body.innerHTML += `
+            <tr>
+                <td>${c.id}</td>
+                <td><strong>${c.annex_ref}</strong></td>
+                <td>${c.name}</td>
+                <td>${c.owner || "—"}</td>
+                <td><span class="${statusClass}">${c.status}</span></td>
+                <td title="${linkedRisks}">${linkedRisks.length > 50 ? linkedRisks.substring(0, 50) + "..." : linkedRisks}</td>
+                <td>${date}</td>
+                <td>
+                    <button class="btn-edit" onclick="editControl(${c.id}, '${c.annex_ref}', '${c.name.replace(/'/g, "\\'")}', '${(c.description || "").replace(/'/g, "\\'")}', '${c.owner || ""}', '${c.status}', ${JSON.stringify(c.risk_ids)})">Rediger</button>
+                    <button class="btn-delete" onclick="deleteControl(${c.id})">Slett</button>
+                </td>
+            </tr>`;
+    });
+}
+
+function populateControlRiskCheckboxes(risks, selectedIds) {
+    const div = document.getElementById("control-risk-checkboxes");
+    div.innerHTML = "";
+    risks.forEach(r => {
+        const scoreColor = r.risk_score <= 6 ? "#27ae60"
+                         : r.risk_score <= 14 ? "#f39c12"
+                         : "#e74c3c";
+        const checked = selectedIds.includes(r.id) ? "checked" : "";
+        div.innerHTML += `
+            <div style="display:flex; flex-direction:row; align-items:center; gap:8px; padding:4px 0;">
+                <input type="checkbox" value="${r.id}" ${checked} style="width:16px; height:16px; min-width:16px; margin:0; padding:0; cursor:pointer;">
+                <span style="background:${scoreColor}; color:white; font-weight:bold; padding:2px 6px; border-radius:4px; font-size:0.8rem;">${r.risk_score}</span>
+                <span style="font-size:0.9rem;">${r.title}</span>
+            </div>`;
+    });
+}
+
+function getSelectedRiskIds() {
+    return Array.from(
+        document.querySelectorAll("#control-risk-checkboxes input:checked")
+    ).map(cb => parseInt(cb.value));
+}
+
+async function addControl() {
+    const control = {
+        annex_ref:   document.getElementById("control-annex").value,
+        annex_name:  document.getElementById("control-annex-name").value,
+        name:        document.getElementById("control-annex-name").value,
+        description: document.getElementById("control-description").value,
+        owner:       document.getElementById("control-owner").value,
+        status:      document.getElementById("control-status").value,
+        risk_ids:    getSelectedRiskIds(),
+    };
+
+    if (editingControlId) {
+        await fetch(`${API}/controls/${editingControlId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(control)
+        });
+        cancelControlEdit();
+    } else {
+        await fetch(`${API}/controls`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(control)
+        });
+    }
+    loadControls();
+}
+
+function editControl(id, annexRef, name, description, owner, status, riskIds) {
+    editingControlId = id;
+    document.getElementById("control-annex").value        = annexRef;
+    document.getElementById("control-annex-name").value   = name;
+    document.getElementById("control-description").value  = description;
+    document.getElementById("control-owner").value        = owner;
+    document.getElementById("control-status").value       = status;
+    const checkboxes = document.querySelectorAll("#control-risk-checkboxes input");
+    checkboxes.forEach(cb => {
+        cb.checked = riskIds.includes(parseInt(cb.value));
+    });
+    document.getElementById("control-form-title").textContent    = "Rediger kontroll";
+    document.getElementById("control-submit-btn").textContent    = "Oppdater kontroll";
+    document.getElementById("control-cancel-btn").style.display  = "inline-block";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function cancelControlEdit() {
+    editingControlId = null;
+    document.getElementById("control-annex").value        = "";
+    document.getElementById("control-annex-name").value   = "";
+    document.getElementById("control-description").value  = "";
+    document.getElementById("control-owner").value        = "";
+    document.getElementById("control-status").value       = "planlagt";
+    document.querySelectorAll("#control-risk-checkboxes input").forEach(cb => cb.checked = false);
+    document.getElementById("control-form-title").textContent   = "Legg til kontroll";
+    document.getElementById("control-submit-btn").textContent   = "Legg til kontroll";
+    document.getElementById("control-cancel-btn").style.display = "none";
+}
+
+async function deleteControl(id) {
+    await fetch(`${API}/controls/${id}`, { method: "DELETE" });
+    loadControls();
 }
 
 // ── RISIKOREGISTER ────────────────────────────────────────
@@ -290,8 +455,6 @@ async function deleteRisk(id) {
     loadRisks();
 }
 
-switchTab('assets');
-
 // ── DASHBOARD ─────────────────────────────────────────────
 
 async function loadDashboard() {
@@ -355,3 +518,6 @@ async function loadDashboard() {
             </tr>`;
     });
 }
+
+loadAnnexA();
+switchTab('assets');

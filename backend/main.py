@@ -1,3 +1,4 @@
+from .annex_a import ANNEX_A_CONTROLS
 from fastapi.responses import StreamingResponse
 import csv
 import io
@@ -8,7 +9,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, select
 from datetime import datetime
-from .models import Risk, RiskCreate, RiskRead, Asset, AssetCreate, AssetRead
+from .models import Risk, RiskCreate, RiskRead, Asset, AssetCreate, AssetRead, Control, ControlCreate, ControlRead, RiskControlLink
 from .database import create_db_and_tables, get_session
 
 app = FastAPI(title="Risk Register PoC")
@@ -131,5 +132,85 @@ def delete_asset(asset_id: int, session: Session = Depends(get_session)):
     if not asset:
         raise HTTPException(status_code=404, detail="Asset not found")
     session.delete(asset)
+    session.commit()
+    return {"ok": True}
+
+@app.get("/annex-a")
+def get_annex_a():
+    return ANNEX_A_CONTROLS
+
+@app.get("/controls", response_model=list[ControlRead])
+def get_controls(session: Session = Depends(get_session)):
+    controls = session.exec(select(Control)).all()
+    result = []
+    for control in controls:
+        links = session.exec(
+            select(RiskControlLink).where(RiskControlLink.control_id == control.id)
+        ).all()
+        risk_ids = [l.risk_id for l in links]
+        control_read = ControlRead.from_orm(control)
+        control_read.risk_ids = risk_ids
+        result.append(control_read)
+    return result
+
+@app.post("/controls", response_model=ControlRead)
+def create_control(control: ControlCreate, session: Session = Depends(get_session)):
+    db_control = Control(
+        name=control.name,
+        description=control.description,
+        annex_ref=control.annex_ref,
+        annex_name=control.annex_name,
+        owner=control.owner,
+        status=control.status,
+    )
+    session.add(db_control)
+    session.commit()
+    session.refresh(db_control)
+    for risk_id in control.risk_ids:
+        link = RiskControlLink(risk_id=risk_id, control_id=db_control.id)
+        session.add(link)
+    session.commit()
+    control_read = ControlRead.from_orm(db_control)
+    control_read.risk_ids = control.risk_ids
+    return control_read
+
+@app.patch("/controls/{control_id}", response_model=ControlRead)
+def update_control(control_id: int, control_data: ControlCreate, session: Session = Depends(get_session)):
+    control = session.get(Control, control_id)
+    if not control:
+        raise HTTPException(status_code=404, detail="Kontroll ikke funnet")
+    for key, value in control_data.dict(exclude={"risk_ids"}).items():
+        setattr(control, key, value)
+    control.updated_at = datetime.utcnow()
+    session.add(control)
+    # Update risk links
+    session.exec(
+        select(RiskControlLink).where(RiskControlLink.control_id == control_id)
+    )
+    old_links = session.exec(
+        select(RiskControlLink).where(RiskControlLink.control_id == control_id)
+    ).all()
+    for link in old_links:
+        session.delete(link)
+    for risk_id in control_data.risk_ids:
+        link = RiskControlLink(risk_id=risk_id, control_id=control_id)
+        session.add(link)
+    session.commit()
+    session.refresh(control)
+    control_read = ControlRead.from_orm(control)
+    control_read.risk_ids = control_data.risk_ids
+    return control_read
+
+@app.delete("/controls/{control_id}")
+def delete_control(control_id: int, session: Session = Depends(get_session)):
+    control = session.get(Control, control_id)
+    if not control:
+        raise HTTPException(status_code=404, detail="Kontroll ikke funnet")
+    old_links = session.exec(
+        select(RiskControlLink).where(RiskControlLink.control_id == control_id)
+    ).all()
+    for link in old_links:
+        session.delete(link)
+    session.delete(control)
     session.commit()
     return {"ok": True}
